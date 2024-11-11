@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BPMN Maker by Hilmy</title>
+    <link rel="stylesheet" href="https://unpkg.com/bpmn-js/dist/assets/diagram-js.css">
+    <link rel="stylesheet" href="https://unpkg.com/bpmn-js/dist/assets/bpmn-font/css/bpmn.css">
+    <style>
+        #canvas {
+            width: 100%;
+            height: 600px;
+            border: 1px solid #ccc;
+        }
+        .console {
+            margin-top: 20px;
+        }
+        .console textarea {
+            width: 99%;
+            min-height: 80px;
+            border: 1px solid #ccc;
+            padding: 10px;
+            font-family: monospace;
+        }
+    </style>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+</head>
+<body>
+    <h1>BPMN Maker by Hilmy</h1>
+    <textarea id="prompt" rows="4" cols="50" placeholder="Enter your prompt here..."></textarea>
+    <button onclick="generateBpmn()">Generate BPMN</button>
+    <button onclick="saveBpmn()">Save BPMN</button>
+    <input type="file" id="file-input" accept=".bpmn" />
+    <div id="canvas"></div>
+    <div class="console">
+        <h3>Console</h3>
+        <textarea id="js-console" readonly></textarea>
+    </div>
+
+    <script src="https://unpkg.com/bpmn-js/dist/bpmn-modeler.development.js"></script>
+    <script src="https://unpkg.com/@bpmn-io/keyboard/dist/keyboard.umd.js"></script>
+    <script>
+        const defaultDiagram = `<?xml version="1.0" encoding="UTF-8"?>
+        <bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL"
+                          xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI"
+                          xmlns:dc="http://www.omg.org/spec/DD/20100524/DC"
+                          xmlns:di="http://www.omg.org/spec/DD/20100524/DI"
+                          id="Definitions_1"
+                          targetNamespace="http://bpmn.io/schema/bpmn">
+          <bpmn:process id="Process_1" isExecutable="false">
+            <bpmn:startEvent id="StartEvent_1"/>
+          </bpmn:process>
+          <bpmndi:BPMNDiagram id="BPMNDiagram_1">
+            <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="Process_1">
+              <bpmndi:BPMNShape id="StartEvent_1_di" bpmnElement="StartEvent_1">
+                <dc:Bounds x="173" y="102" width="36" height="36"/>
+              </bpmndi:BPMNShape>
+            </bpmndi:BPMNPlane>
+          </bpmndi:BPMNDiagram>
+        </bpmn:definitions>`;
+
+        let modeler = new BpmnJS({
+            container: '#canvas',
+            keyboard: {
+                bindTo: window
+            }
+        });
+
+        async function initializeModeler() {
+            try {
+                await modeler.importXML(defaultDiagram);
+                modeler.get('canvas').zoom('fit-viewport');
+                log('Default BPMN diagram loaded');
+            } catch (err) {
+                console.error('Error loading default BPMN diagram:', err);
+                log('Error loading default BPMN diagram: ' + err.message);
+            }
+        }
+
+        function log(str) {
+            const console = $('#js-console');
+            console.val(console.val() + str + '\n');
+        }
+
+        async function generateBpmn() {
+            const message = $('#prompt').val();
+            try {
+                const response = await $.ajax({
+                    url: '/api/chat-bot',
+                    type: 'POST',
+                    contentType: 'application/json',
+                    data: JSON.stringify({ message })
+                });
+
+                if (response.status !== 201) {
+                    alert(response.msg || 'Failed to generate BPMN model');
+                    return;
+                }
+
+                const bpmnModel = response.data;
+                console.log(bpmnModel);
+
+                // Validate if the response is a valid BPMN XML
+                if (!bpmnModel.startsWith('<?xml') && !bpmnModel.includes('<bpmn:definitions')) {
+                    alert('Invalid BPMN XML returned from the API');
+                    console.error('Invalid BPMN XML:', bpmnModel);
+                    return;
+                }
+
+                try {
+                    const { warnings } = await modeler.importXML(bpmnModel);
+                    console.log('Rendered with warnings:', warnings);
+                    modeler.get('canvas').zoom('fit-viewport');
+                    log('BPMN model rendered successfully');
+                } catch (err) {
+                    console.error('Error rendering BPMN diagram:', err);
+                    log('Error rendering BPMN diagram: ' + err.message);
+                }
+            } catch (error) {
+                console.error('Error generating BPMN:', error);
+                alert('Failed to generate BPMN: ' + error);
+                log('Error generating BPMN: ' + error.message);
+            }
+        }
+
+        async function saveBpmn() {
+            try {
+                const { xml } = await modeler.saveXML({ format: true });
+                console.log('BPMN XML:', xml);
+                log('BPMN XML saved successfully');
+                // You can send the XML to your server or download it
+                // For example, to download:
+                const blob = new Blob([xml], { type: 'application/xml' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = 'diagram.bpmn';
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+            } catch (err) {
+                console.error('Error saving BPMN diagram:', err);
+                log('Error saving BPMN diagram: ' + err.message);
+            }
+        }
+
+        async function importBpmnFromFile(event) {
+            const file = event.target.files[0];
+            if (!file) {
+                return;
+            }
+
+            const reader = new FileReader();
+            reader.onload = async function(e) {
+                const xml = e.target.result;
+                try {
+                    await modeler.importXML(xml);
+                    modeler.get('canvas').zoom('fit-viewport');
+                    log('BPMN diagram imported successfully');
+                } catch (err) {
+                    console.error('Error importing BPMN diagram:', err);
+                    log('Error importing BPMN diagram: ' + err.message);
+                }
+            };
+            reader.readAsText(file);
+        }
+
+        // Initialize the modeler with the default diagram
+        initializeModeler();
+
+        // Add event listener for file input
+        document.getElementById('file-input').addEventListener('change', importBpmnFromFile);
+    </script>
+</body>
+</html>

@@ -1,0 +1,53 @@
+{
+  "name": "api",
+  "version": "1.0.0",
+  "description": "API",
+  "main": "app.js",
+  "scripts": {
+    "start": "cross-env NODE_ENV=production node ./bin/www",
+    "start:staging": "cross-env NODE_ENV=staging node ./bin/www",
+    "start:dev": "cross-env NODE_ENV=development node ./bin/www",
+    "dev": "cross-env NODE_ENV=development nodemon ./bin/www"
+  },
+  "prettier": {
+    "tabWidth": 4,
+    "printWidth": 120
+  },
+  "dependencies": {
+    "@google/generative-ai": "^0.18.0",
+    "@handlebars/allow-prototype-access": "^1.0.5",
+    "axios": "^1.5.0",
+    "bcrypt": "^5.1.1",
+    "body-parser": "^1.20.2",
+    "cors": "^2.8.5",
+    "cross-env": "^7.0.3",
+    "crypto": "^1.0.1",
+    "csv-parser": "^3.0.0",
+    "debug": "^4.3.4",
+    "dotenv": "^16.3.1",
+    "ejs": "^3.1.10",
+    "express": "^4.18.2",
+    "express-generator": "^4.2.0",
+    "fs": "^0.0.1-security",
+    "hbs": "^4.2.0",
+    "http-status-codes": "^2.2.0",
+    "jsonwebtoken": "^9.0.2",
+    "morgan": "^1.10.0",
+    "multer": "^1.4.5-lts.1",
+    "mustache": "^4.2.0",
+    "nodemailer": "^6.9.5",
+    "pdfkit": "^0.14.0",
+    "pg": "^8.11.3",
+    "pg-hstore": "^2.3.4",
+    "punycode": "^2.3.1",
+    "puppeteer-html-pdf": "^4.0.8",
+    "sequelize": "^6.33.0",
+    "sequelize-cli": "^6.6.1",
+    "util": "^0.12.5",
+    "validator": "^13.11.0"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.2",
+    "prettier": "3.3.2"
+  }
+}

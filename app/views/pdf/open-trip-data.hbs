@@ -1,0 +1,69 @@
+<html lang='en'>
+  <head>
+    <meta charset='UTF-8' />
+    <meta name='viewport' content='width=device-width, initial-scale=1.0' />
+    <title>Open Trip Details</title>
+    <style>
+      body { font-family: Arial, sans-serif; margin: 0; padding: 0; } .container
+      { max-width: 800px; margin: 0 auto; padding: 20px; } h1 { text-align:
+      center; } table { width: 100%; border-collapse: collapse; } th, td {
+      border: 1px solid #ddd; padding: 8px; text-align: left; } th {
+      background-color: #f2f2f2; } .total-income { background-color: #f0f0f0;
+      border: 1px solid #ccc; border-radius: 5px; padding: 10px; text-align:
+      center; } .amount { font-size: 24px; color: #2e8b57; /* Dark green color
+      */ font-weight: bold; }
+    </style>
+  </head>
+  <body>
+    <div class='container'>
+      <h1 style='border-bottom: 1px #DC602A; padding-bottom: 10px;'>Open Trip
+        Details</h1>
+
+      <h2 style='border-bottom: 1px solid #DC602A; padding-bottom: 10px;'>Trip
+        Information</h2>
+      <div
+        style='background-color: #f0f0f0; border: 1px solid #ccc; border-radius: 5px; padding: 10px;'
+      >
+        <p><strong>Name:</strong> {{openTripData.Trip.name}}</p>
+        <p><strong>Organizer:</strong>
+          {{openTripData.Trip.User.fullName}}</p>
+        <p><strong>Start Date:</strong> {{openTripData.Trip.startDate}}</p>
+        <p><strong>End Date:</strong> {{openTripData.Trip.endDate}}</p>
+      </div>
+
+      <h2
+        style='border-bottom: 1px solid #DC602A; padding-bottom: 10px;'
+      >Participant List</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>Email</th>
+            <th>Phone</th>
+            <th>Amount</th>
+            <th>Transaction</th>
+          </tr>
+        </thead>
+        <tbody>
+          {{#each participantsList}}
+            <tr>
+              <td>{{User.fullName}}</td>
+              <td>{{User.email}}</td>
+              <td>{{#if
+                  User.UserContact
+                }}{{User.UserContact.phone}}{{else}}N/A{{/if}}</td>
+              <td>Rp {{Transaction.grossAmount}}</td>
+              <td>{{Transaction.invoiceDate}}</td>
+            </tr>
+          {{/each}}
+        </tbody>
+      </table>
+
+      <h2 style='border-bottom: 1px solid #DC602A; padding-bottom: 10px;'>Total
+        Income</h2>
+      <div class='total-income'>
+        <p><span class='amount'>Rp {{totalIncome}}</span></p>
+      </div>
+    </div>
+  </body>
+</html>
